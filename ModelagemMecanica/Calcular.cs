@@ -33,41 +33,24 @@ public class Calcular
         double sum = entidades.Aggregate(0.0, (acc, x) => acc + x.MassaReal);
         Console.WriteLine($"m = {sum}");
     }
-    public void CalcularMV2()
+    public double CalcularMV2()
     {
         string formulaInicial = $"(m{eixo}.{eixo}^2)/2 =";
-        for (int i = 0; i < entidades.Length; i++)
-        {
-            var entidade = entidades[i];
-            var bases = $"({entidade.EixoRepresentativo}.{entidade.eixo}^2)/2";
-            formulaInicial += FormatString(bases, i);
-        }
-        Console.WriteLine(formulaInicial);
-        string formulaInicialSem2 = $"m{eixo}.{eixo}^2 =";
-        for (int i = 0; i < entidades.Length; i++)
-        {
-            var entidade = entidades[i];
-            string bases = $"{entidade.EixoRepresentativo}.{entidade.eixo}^2";
-            formulaInicialSem2 += FormatString(bases, i); 
+        CalcularFormula(formulaInicial, entidades, entidade => $"({entidade.EixoMassaRepresentativo}.{entidade.eixo}^2)/2");
 
-        }
-        Console.WriteLine(formulaInicialSem2);
+
+        string formulaInicialSem2 = $"m{eixo}.{eixo}^2 =";
+        CalcularFormula(formulaInicialSem2, entidades, entidade => $"{entidade.EixoMassaRepresentativo}.{entidade.eixo}^2");
+
+
         string formulaComAnguloEixoAjustado = $"m{eixo}.{eixo}^2 =";
-        for (int i = 0; i < entidades.Length; i++)
-        {
-            var entidade = entidades[i];
-            string bases = $"({entidade.EixoRepresentativo}.{eixo}^2)/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2": "")})";
-            formulaComAnguloEixoAjustado += FormatString(bases, i);
-        }
-        Console.WriteLine(formulaComAnguloEixoAjustado);
+        CalcularFormula(formulaComAnguloEixoAjustado, entidades, entidade =>
+        $"({entidade.EixoMassaRepresentativo}.{eixo}^2)/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})");
+
         string formulaSemEixo = $"m{eixo} =";
-        for (int i = 0; i < entidades.Length; i++)
-        {
-            var entidade = entidades[i];
-            string bases = $"{entidade.EixoRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})";
-            formulaSemEixo += FormatString(bases, i);
-        }
-        Console.WriteLine(formulaSemEixo);
+        CalcularFormula(formulaSemEixo, entidades, entidade =>
+        $"{entidade.EixoMassaRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})");
+
         bool alguemAjustado = entidades.Any(entidade => entidade.ajustado);
         if (alguemAjustado)
         {
@@ -75,10 +58,10 @@ public class Calcular
             for (int i = 0; i < entidades.Length; i++)
             {
                 var entidade = entidades[i];
-                string bases = $"{entidade.EixoRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")}){(entidade.ajustado ? $" * {entidade.formula})" : "")}";
+                string bases = $"{entidade.EixoMassaRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")}){(entidade.ajustado ? $" * {entidade.formula})" : "")}";
                 formulaAjustada += FormatString(bases, i);
             }
-           Console.WriteLine(formulaAjustada);
+            Console.WriteLine(formulaAjustada);
         }
         string formuamComAnguloSubistituido = $"m{eixo} =";
         for (int i = 0; i < entidades.Length; i++)
@@ -90,7 +73,115 @@ public class Calcular
         Console.WriteLine(formuamComAnguloSubistituido);
         double sum = entidades.Aggregate(0.0, (acc, x) => acc + x.MassaReal);
         Console.WriteLine($"m = {sum}");
+        return sum;
 
+    }
+    public double CalcularK()
+    {
+        var entidadesK = entidades.Where(x => x.k != 0).ToArray();
+        string formulaInicial = $"(k{eixo}.{eixo}^2)/2 =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            var bases = $"(k{entidade.EixoRepresentativo}.{entidade.eixo}^2)/2";
+            formulaInicial += FormatString(bases, i);
+        }
+        Console.WriteLine(formulaInicial);
+        string formulaInicialSem2 = $"k{eixo}.{eixo}^2 =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"k{entidade.EixoRepresentativo}.{entidade.eixo}^2";
+            formulaInicialSem2 += FormatString(bases, i);
+
+        }
+        Console.WriteLine(formulaInicialSem2);
+        string formulaComAnguloEixoAjustado = $"k{eixo}.{eixo}^2 =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"(k{entidade.EixoRepresentativo}.{eixo}^2)/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})";
+            formulaComAnguloEixoAjustado += FormatString(bases, i);
+        }
+        Console.WriteLine(formulaComAnguloEixoAjustado);
+        string formulaSemEixo = $"k{eixo} =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"k{entidade.EixoRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})";
+            formulaSemEixo += FormatString(bases, i);
+        }
+        Console.WriteLine(formulaSemEixo);
+        string formuamComAnguloSubistituido = $"k{eixo} =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"{entidade.KReal}{eixo}";
+            formuamComAnguloSubistituido += FormatString(bases, i);
+        }
+        Console.WriteLine(formuamComAnguloSubistituido);
+        double sum = entidadesK.Aggregate(0.0, (acc, x) => acc + x.KReal);
+        Console.WriteLine($"k = {sum}");
+        return sum;
+    }
+    public double CalcularC()
+    {
+        var entidadesK = entidades.Where(x => x.c != 0).ToArray();
+        string formulaInicialSem2 = $"c{eixo}.{eixo}^2 =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"c{entidade.EixoRepresentativo}.{entidade.eixo}^2";
+            formulaInicialSem2 += FormatString(bases, i);
+
+        }
+        Console.WriteLine(formulaInicialSem2);
+        string formulaComAnguloEixoAjustado = $"c{eixo}.{eixo}^2 =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"(c{entidade.EixoRepresentativo}.{eixo}^2)/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})";
+            formulaComAnguloEixoAjustado += FormatString(bases, i);
+        }
+        Console.WriteLine(formulaComAnguloEixoAjustado);
+        string formulaSemEixo = $"c{eixo} =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"c{entidade.EixoRepresentativo}/({entidade.ratio}{(entidade.EAngulo ? $"{entidade.RaioRepresentativo}^2" : "")})";
+            formulaSemEixo += FormatString(bases, i);
+        }
+        Console.WriteLine(formulaSemEixo);
+        string formuamComAnguloSubistituido = $"c{eixo} =";
+        for (int i = 0; i < entidadesK.Length; i++)
+        {
+            var entidade = entidadesK[i];
+            string bases = $"{entidade.CReal}{eixo}";
+            formuamComAnguloSubistituido += FormatString(bases, i);
+        }
+        Console.WriteLine(formuamComAnguloSubistituido);
+        double sum = entidadesK.Aggregate(0.0, (acc, x) => acc + x.CReal);
+        Console.WriteLine($"c = {sum}");
+        return sum;
+    }
+
+    public double CalcularWn()
+    {
+        var k = CalcularK();
+        Console.WriteLine();
+        var wn = Math.Sqrt(k);
+        Console.WriteLine($"wn = {wn}");
+        return wn;
+    }
+    public double CalcularZ()
+    {
+        var c = CalcularC();
+        Console.WriteLine();
+        var wn =  CalcularWn();
+        var z = c / (wn * 2);
+        Console.WriteLine();
+        Console.WriteLine($"z = {z}");
+        return z;
     }
     private string FormatString(string text, int num)
     {
@@ -100,5 +191,15 @@ public class Calcular
         }
 
         return $" + {text}";
+    }
+    private void CalcularFormula(string eixo, Entidade[] entidades, Func<Entidade, string> formulaSelector)
+    {
+        for (int i = 0; i < entidades.Length; i++)
+        {
+            var entidade = entidades[i];
+            string bases = formulaSelector(entidade);
+            eixo += FormatString(bases, i);
+        }
+        Console.WriteLine(eixo);
     }
 }

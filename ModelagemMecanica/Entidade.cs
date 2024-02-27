@@ -36,6 +36,7 @@ public class Entidade
         formula = $"(m{eixo[1..]}.{RaioRepresentativo}^2)/2";
     }
     public bool EAngulo => eixo[0] == '0';
-    public string EixoRepresentativo => EAngulo ? $"J{eixo[1..]}" :  $"m{eixo}"; 
+    public string EixoMassaRepresentativo => EAngulo ? $"J{eixo[1..]}" :  $"m{eixo}"; 
+    public string EixoRepresentativo => EAngulo ? eixo[1..] :  eixo; 
     public string RaioRepresentativo => $"r{eixo[1..]}"; 
 }
